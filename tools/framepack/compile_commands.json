@@ -1,0 +1,15 @@
+[
+    {
+        "arguments": [
+            "g++",
+            "-c",
+            "-Wall",
+            "-std=c++14",
+            "-o",
+            "framepack.o",
+            "framepack.cc"
+        ],
+        "directory": "/mnt/docs/Programming/DOS/code/nagareteku/tools/framepack",
+        "file": "framepack.cc"
+    }
+]
