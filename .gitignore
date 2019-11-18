@@ -1,0 +1,5 @@
+.clangd
+.vscode
+bin
+compile_commands.json
+setenv
