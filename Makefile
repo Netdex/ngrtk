@@ -9,18 +9,19 @@ RDIR := res
 # List of default compiler flags
 DEPS := -I$(SDIR) -Ideps/
 CXX := $(CROSS_COMPILE)g++
-CXXFLAGS := -Wall -MMD -std=gnu++14 $(DEPS)
+CXXFLAGS := -Wall -MMD $(DEPS)
 
 # ngrtk target configuration
 BIN.ngrtk := ngrtk.exe
 RESOURCES.ngrtk := CWSDPMI.EXE
 SOURCES.ngrtk := nagareteku.cc \
-				 io/vga_dos.cc
+                 io/vga_dos.cc
 
 # framepack target configuration
 BIN.framepack := framepack
 SOURCES.framepack := framepack.cc \
-                     util/stb_image.cc
+                     gfx/dither.cc \
+                     third_party/stb/stb_image.cc
 
 ############################## HERE BE DRAGONS ##############################
 
@@ -59,8 +60,10 @@ $(eval $(call define-target,ngrtk))
 $(eval $(call define-target,framepack))
 
 # Target specific overrides
-ngrtk: CXX=$(CROSS_COMPILE)g++
+ngrtk: CXX = $(CROSS_COMPILE)g++
+ngrtk: CXXFLAGS += -std=gnu++14 -O2
 framepack: CXX=g++
+framepack: CXXFLAGS += -std=c++17 -O2
 
 # Copy additional resources for ngrtk target
 TARGET_RESOURCES.ngrtk := $(addprefix $(ODIR)/ngrtk/,$(RESOURCES.ngrtk))
