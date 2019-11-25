@@ -8,6 +8,7 @@
 #include <dos.h>
 #include <sys/nearptr.h>
 #include <gfx/surface.h>
+#include <cassert>
 
 #include "util/logging_dos.h"
 
@@ -59,6 +60,7 @@ namespace vga {
     }
 
     void plot(int x, int y, uint8_t color) {
+        assert(x >= 0 && y >= 0 && x < kVgaWidth && y < kVgaHeight);
         kVgaSurface->plot(x, y, color);
     }
 

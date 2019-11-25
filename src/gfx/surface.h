@@ -9,6 +9,7 @@
 #include "io/vga_dos.h"
 
 #include "third_party/stb/stb_image_write.h"
+#include "vga_palette.h"
 
 namespace gfx {
     template<size_t W, size_t H>
@@ -36,15 +37,19 @@ namespace gfx {
             return buffer_[(y << 8) + (y << 6) + x];
         }
 
-        void save(char *filename) {
-            // TODO use palette data?
-            uint8_t image[size_];
+        void save(char *filename, const vga_palette &palette) {
+            constexpr int comp = 3;
+            uint8_t image[size_ * comp];
             for (size_t y = 0; y < H; ++y) {
                 for (size_t x = 0; x < W; ++x) {
-                    image[y * W + x] = buffer_[y * W + x] == 1 ? 255 : 0;
+                    uint8_t r, g, b;
+                    palette.get(buffer_[y * W + x], r, g, b);
+                    image[y * (comp * W) + comp * x] = r;
+                    image[y * (comp * W) + comp * x + 1] = g;
+                    image[y * (comp * W) + comp * x + 2] = b;
                 }
             }
-            stbi_write_png(filename, static_cast<int>(W), static_cast<int>(H), 1, image, static_cast<int>(W));
+            stbi_write_png(filename, static_cast<int>(W), static_cast<int>(H), comp, image, static_cast<int>(W) * comp);
         }
 
         uint8_t *data() {

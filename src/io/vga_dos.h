@@ -11,7 +11,7 @@ namespace vga {
     // Height in pixels of mode 13h.
     constexpr int kVgaHeight = 200;
     // Number of colors in mode 13h.
-    constexpr int kNumColors = 256;
+    constexpr size_t kNumColors = 256;
 
     enum class Mode : unsigned char {
         kVga256ColorMode = 0x13,

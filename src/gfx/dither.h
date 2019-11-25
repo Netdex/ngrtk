@@ -7,7 +7,8 @@
 
 namespace gfx {
 
-    void vga_dither(unsigned char *data, vga_surface &surface, float contrast, float brightness);
+    void vga_dither(unsigned char *data, vga_surface &surface, const vga_palette &palette, float contrast = 1.0f,
+                    float brightness = 0.0f);
 
 
 }
