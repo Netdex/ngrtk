@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
+#include <memory>
 
 #include "io/vga_dos.h"
 
@@ -15,7 +16,17 @@ namespace gfx {
     template<size_t W, size_t H>
     class surface {
     public:
-        surface() : buffer_{0} {}
+        surface() {}
+
+        surface(surface &&o) = delete;
+
+        surface(const surface &o) = delete;
+
+        surface &operator=(const surface &o) = delete;
+
+        friend void swap(surface &a, surface &b) {
+            std::swap(a.buffer_, b.buffer_);
+        }
 
         void copy_to(surface<W, H> &other) const {
             copy_to(other.buffer_);
@@ -56,9 +67,10 @@ namespace gfx {
             return buffer_;
         }
 
+
     private:
         static constexpr size_t size_ = W * H;
-        uint8_t buffer_[size_];
+        uint8_t buffer_[size_] = {0};
     };
 
     using vga_surface = gfx::surface<vga::kVgaWidth, vga::kVgaHeight>;

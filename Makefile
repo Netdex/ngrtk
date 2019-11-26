@@ -15,13 +15,18 @@ CXXFLAGS := -Wall -MMD $(DEPS)
 BIN.ngrtk := ngrtk.exe
 RESOURCES.ngrtk := CWSDPMI.EXE
 SOURCES.ngrtk := nagareteku.cc \
-                 io/vga_dos.cc
+                 io/vga_dos.cc \
+                 io/video_decoder.cc \
+                 third_party/lz4/lz4.c
 
 # framepack target configuration
 BIN.framepack := framepack
 SOURCES.framepack := framepack.cc \
                      gfx/dither.cc \
-                     third_party/stb/stb_image.cc
+                     io/video_encoder.cc \
+                     third_party/stb/stb_image.cc \
+                     third_party/lz4/lz4.c \
+                     third_party/lz4/lz4hc.c
 
 ############################## HERE BE DRAGONS ##############################
 
@@ -31,7 +36,7 @@ all:;
 # Macro for defining a target using a subset of all sources
 define define-target
 # Enumerate all required files
-OBJECTS.$(1) := $$(addprefix $(ODIR)/$(1)/,$$(patsubst %.cc,%.o,$(SOURCES.$(1))))
+OBJECTS.$(1) := $$(addprefix $(ODIR)/$(1)/,$$(addsuffix .o,$$(basename $(SOURCES.$(1)))))
 DEPENDS.$(1) := $$(OBJECTS.$(1):.o=.d)
 
 # Enumerate build artifacts for make clean

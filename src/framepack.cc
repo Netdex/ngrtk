@@ -10,27 +10,44 @@
 #include "gfx/surface.h"
 #include "gfx/dither.h"
 #include "gfx/vga_palette.h"
+#include "io/video_coder.h"
 #include "io/vga_dos.h"
 
 #include "third_party/stb/stb_image.h"
+#include "third_party/lz4/lz4.h"
+#include "third_party/lz4/lz4hc.h"
 
 void print_usage(int argc, char *argv[]) {
-    std::cerr << "Usage: " << argv[0] << " -n <count> -p palette [-b <brightness>] [-c <contrast>] <prefix>"
+    std::cerr << "Usage: " << argv[0] << "-s <start> -n <count> -p palette [-b <brightness>] [-c <contrast>] <prefix>"
               << std::endl;
 }
 
 int main(int argc, char *argv[]) {
+    long start = 0;
     long count = 0;
     float contrast = 1.0f;
     float brightness = 0.0f;
     size_t palette_size = 0;
     uint8_t palette_data[vga::kNumColors * 3];
+    const char ext[] = "png";
 
     int opt;
-    while ((opt = getopt(argc, argv, "n:p:b::c::")) != -1) {
+    while ((opt = getopt(argc, argv, "s::n:p:b::c::")) != -1) {
         switch (opt) {
+            case 's': {
+                char *endptr;
+                assert(optarg != nullptr);
+                start = std::strtol(optarg, &endptr, 0);
+                if (endptr == optarg || *endptr != '\0') {
+                    std::cerr << argv[0] << ": \"" << optarg << "\" is invalid format for -s, expected scalar integral"
+                              << std::endl;
+                    return EXIT_FAILURE;
+                }
+                break;
+            }
             case 'n': {
                 char *endptr;
+                assert(optarg != nullptr);
                 count = std::strtol(optarg, &endptr, 0);
                 if (endptr == optarg || *endptr != '\0') {
                     std::cerr << argv[0] << ": \"" << optarg << "\" is invalid format for -n, expected scalar integral"
@@ -41,6 +58,7 @@ int main(int argc, char *argv[]) {
             }
             case 'b': {
                 char *endptr;
+                assert(optarg != nullptr);
                 brightness = std::strtof(optarg, &endptr);
                 assert(brightness >= -1.0f && brightness <= 1.0f);
                 if (endptr == optarg || *endptr != '\0') {
@@ -52,6 +70,7 @@ int main(int argc, char *argv[]) {
             }
             case 'c': {
                 char *endptr;
+                assert(optarg != nullptr);
                 contrast = std::strtof(optarg, &endptr);
                 if (endptr == optarg || *endptr != '\0') {
                     std::cerr << argv[0] << ": \"" << optarg << "\" is invalid format for -c, expected scalar float"
@@ -63,6 +82,7 @@ int main(int argc, char *argv[]) {
             case 'p': {
                 palette_size = 0;
                 char *endptr = optarg;
+                assert(optarg != nullptr);
                 while (*endptr != '\0') {
                     long val = std::strtol(endptr, &endptr, 0);
                     if (optarg == endptr) {
@@ -94,14 +114,23 @@ int main(int argc, char *argv[]) {
     char *prefix = argv[optind];
     assert(count > 0);
 
-    std::cout << "framepack: processing " << count << " images with prefix " << prefix << std::endl;
+    std::cout << "framepack: processing " << count << " images, with prefix " << prefix << ", starting with index "
+              << start << std::endl;
 
-    const gfx::vga_palette my_palette(palette_data, palette_size);
+    const gfx::vga_palette my_palette(palette_data, static_cast<uint8_t>(palette_size));
 
-    std::vector<gfx::vga_surface> frames;
-    for (long i = 0; i < count; ++i) {
-        char filename[256];
-        snprintf(filename, 256, "%s%06ld.png", prefix, i);
+    char filename[256];
+    snprintf(filename, 256, "%s.lz4", prefix);
+    std::ofstream outf(filename);
+    assert(outf.good());
+
+    io::video_encoder encoder(outf);
+    io::video_file_hdr file_hdr{};
+    file_hdr.frame_count = static_cast<uint32_t>(count);
+    encoder.encode_header(file_hdr);
+
+    for (long i = start; i < start + count; ++i) {
+        snprintf(filename, 256, "%s%06ld.%s", prefix, i, ext);
         std::cout << filename << std::endl;
 
         int x, y, n;
@@ -109,15 +138,16 @@ int main(int argc, char *argv[]) {
         assert(data != nullptr);
         assert(x == vga::kVgaWidth && y == vga::kVgaHeight);
 
-        gfx::vga_surface frame;
-        gfx::vga_dither(data, frame, my_palette, contrast, brightness);
-//        gfx::vga_dither(data, frame, my_palette, 1.38f, 0.03f);
-        snprintf(filename, 256, "%s%06ld.quant.png", prefix, i);
-        frame.save(filename, my_palette);
-
+        gfx::vga_dither(data, *encoder.get_surface(), my_palette, contrast, brightness);
         stbi_image_free(data);
+
+        io::video_frame_hdr frame_hdr{};
+        encoder.encode_frame(frame_hdr);
+
+//        gfx::vga_dither(data, frame, my_palette, 1.38f, 0.03f);
+//        snprintf(filename, 256, "%s%06ld.quant.%s", prefix, i, ext);
+//        frame.save(filename, my_palette);
     }
-
-
+    outf.close();
     return 0;
 }

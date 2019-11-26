@@ -14,4 +14,4 @@ namespace gfx {
 }
 
 
-#endif //NAGARETEKU_DITHER_H
+#endif

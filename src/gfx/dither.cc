@@ -14,9 +14,9 @@ namespace gfx {
         for (int y = 0; y < vga::kVgaHeight; ++y) {
             for (int x = 0; x < vga::kVgaWidth; ++x) {
                 unsigned char *pixel = data + y * (vga::kVgaWidth * 3) + x * 3;
-                float_data[y][x][0] = adjust(pixel[0] / 255.f,contrast,brightness);
-                float_data[y][x][1] = adjust(pixel[1] / 255.f,contrast,brightness);
-                float_data[y][x][2] = adjust(pixel[2] / 255.f,contrast,brightness);
+                float_data[y][x][0] = adjust(pixel[0] / 255.f, contrast, brightness);
+                float_data[y][x][1] = adjust(pixel[1] / 255.f, contrast, brightness);
+                float_data[y][x][2] = adjust(pixel[2] / 255.f, contrast, brightness);
             }
         }
 

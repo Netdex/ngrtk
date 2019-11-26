@@ -61,7 +61,7 @@
 #endif
 
 #define LZ4_COMMONDEFS_ONLY
-#include "lz4.c"   /* LZ4_count, constants, mem */
+#include "lz4.cc"   /* LZ4_count, constants, mem */
 
 
 /*===   Constants   ===*/
