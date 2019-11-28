@@ -32,6 +32,8 @@ namespace vga {
 
     void clear(uint8_t color);
 
+    uint8_t *get_buffer();
+
     void swap(int flags = SwapFlags::kNone);
 
     void wait_retrace();

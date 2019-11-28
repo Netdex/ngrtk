@@ -5,18 +5,25 @@
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
-#include <memory>
 
 #include "io/vga_dos.h"
+#include "gfx/vga_palette.h"
 
 #include "third_party/stb/stb_image_write.h"
-#include "vga_palette.h"
 
 namespace gfx {
     template<size_t W, size_t H>
     class surface {
     public:
-        surface() {}
+        surface() : buffer_(new uint8_t[size_]), is_buffer_owner(true) {}
+
+        surface(uint8_t *buffer) : buffer_(buffer), is_buffer_owner(false) {}
+
+        ~surface() {
+            if (is_buffer_owner) {
+                delete[] buffer_;
+            }
+        }
 
         surface(surface &&o) = delete;
 
@@ -26,6 +33,7 @@ namespace gfx {
 
         friend void swap(surface &a, surface &b) {
             std::swap(a.buffer_, b.buffer_);
+            std::swap(a.is_buffer_owner, b.is_buffer_owner);
         }
 
         void copy_to(surface<W, H> &other) const {
@@ -70,7 +78,8 @@ namespace gfx {
 
     private:
         static constexpr size_t size_ = W * H;
-        uint8_t buffer_[size_] = {0};
+        uint8_t *buffer_;
+        bool is_buffer_owner;
     };
 
     using vga_surface = gfx::surface<vga::kVgaWidth, vga::kVgaHeight>;

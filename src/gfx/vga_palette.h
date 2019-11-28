@@ -4,14 +4,14 @@
 #include <cstring>
 #include <cstdint>
 #include <cstdlib>
-#include <cassert>
+#include "util/logging.h"
 #include <cmath>
 #include <climits>
 #include <cfloat>
 
 namespace gfx {
     inline uint8_t convert_rgb_value(float x) {
-        assert(x >= 0.0f && x <= 1.0f);
+        CHECK(x >= 0.0f && x <= 1.0f);
         return static_cast<uint8_t>(x * 255.0f);
     }
 
@@ -26,14 +26,14 @@ namespace gfx {
         }
 
         void get(uint8_t index, uint8_t &r, uint8_t &g, uint8_t &b) const {
-            assert(index < num_colors_);
+            CHECK(index < num_colors_);
             r = palette_data_[index * 3];
             g = palette_data_[index * 3 + 1];
             b = palette_data_[index * 3 + 2];
         }
 
         void get(uint8_t index, float &fr, float &fg, float &fb) const {
-            assert(index < num_colors_);
+            CHECK(index < num_colors_);
             fr = convert_rgb_value(palette_data_[index * 3]);
             fg = convert_rgb_value(palette_data_[index * 3 + 1]);
             fb = convert_rgb_value(palette_data_[index * 3 + 2]);

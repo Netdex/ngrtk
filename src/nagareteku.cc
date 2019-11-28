@@ -1,29 +1,32 @@
 #include <iostream>
 #include <cmath>
-#include <pc.h>
+#include <fstream>
 
-#include "util/logging_dos.h"
+#include <pc.h>
+#include <dos.h>
+
+#include "util/logging.h"
 #include "io/vga_dos.h"
+#include "io/video_coder.h"
 
 int main(int argc, const char *argv[]) {
     vga::init();
     vga::set_mode(vga::Mode::kVga256ColorMode);
     vga::set_default_palette();
 
-    size_t time = 0;
-    while (true) {
-        sound((time * 10) % 100);
-        for (size_t y = 0; y < vga::kVgaHeight; ++y) {
-            for (size_t x = 0; x < vga::kVgaWidth; ++x) {
-//                vga::Plot(x, y,
-//                          static_cast<uint8_t>(sin(x * y + time * 0.1f) * 6));
-                vga::plot(x, y, (x + time) % 6);
-            }
-        }
-        ++time;
-        vga::swap(vga::SwapFlags::kVgaWaitRetrace | vga::SwapFlags::kVgaClear);
+    std::ifstream video_file("video.lz4", std::ios::binary);
+    io::video_decoder decoder(video_file);
+    io::video_file_hdr video_hdr{};
+    decoder.decode_header(video_hdr);
+
+    for (size_t i = 0; i < video_hdr.frame_count; ++i) {
+        io::video_frame_hdr frame_hdr{};
+        decoder.decode_frame(frame_hdr).copy_to(vga::get_buffer());
+        vga::swap(vga::SwapFlags::kVgaWaitRetrace);
     }
+    video_file.close();
     std::cin.ignore();
+
     vga::reset();
     return 0;
 }

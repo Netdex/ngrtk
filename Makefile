@@ -13,7 +13,9 @@ CXXFLAGS := -Wall -MMD $(DEPS)
 
 # ngrtk target configuration
 BIN.ngrtk := ngrtk.exe
-RESOURCES.ngrtk := CWSDPMI.EXE
+RESOURCES.ngrtk := CWSDPMI.EXE \
+                   video.lz4
+
 SOURCES.ngrtk := nagareteku.cc \
                  io/vga_dos.cc \
                  io/video_decoder.cc \
@@ -72,8 +74,8 @@ framepack: CXXFLAGS += -std=c++17 -O2
 
 # Copy additional resources for ngrtk target
 TARGET_RESOURCES.ngrtk := $(addprefix $(ODIR)/ngrtk/,$(RESOURCES.ngrtk))
-ngrtk: $(TARGET_RESOURCES)
-$(TARGET_RESOURCES): $(ODIR)/ngrtk/%: $(RDIR)/%
+ngrtk: $(TARGET_RESOURCES.ngrtk)
+$(TARGET_RESOURCES.ngrtk): $(ODIR)/ngrtk/%: $(RDIR)/%
 	cp $< $@
 
 # General targets

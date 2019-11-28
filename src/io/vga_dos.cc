@@ -10,7 +10,7 @@
 #include <gfx/surface.h>
 #include <cassert>
 
-#include "util/logging_dos.h"
+#include "util/logging.h"
 
 namespace vga {
     namespace {
@@ -32,6 +32,7 @@ namespace vga {
         constexpr size_t kReservedPalette = 16;
         uint8_t kVgaDefaultPalette[] = {
                 /*  0: BLACK  */ 0, 0, 0,
+                /* 15: WHITE  */ 255, 255, 255,
                 /*  1: BLUE   */ 0, 0, 255,
                 /*  2: CYAN   */ 0, 255, 255,
                 /*  3: RED    */ 255, 0, 0,
@@ -41,12 +42,11 @@ namespace vga {
                                  0, 0, 0, 0, 0, 0,
                                  0, 0, 0, 0, 0, 0,
                                  0, 0, 0, 0, 0, 0, 0, 0, 0,
-                /* 15: WHITE  */ 255, 255, 255,
         };
     }
 
     void init() {
-        ASSERT(__djgpp_nearptr_enable() != 0);
+        CHECK(__djgpp_nearptr_enable() != 0);
         kVgaMemory += __djgpp_conventional_base;
         kVgaSurface = std::make_unique<gfx::surface<kVgaWidth, kVgaHeight>>();
         // __djgpp_nearptr_disable();
@@ -66,6 +66,10 @@ namespace vga {
 
     void clear(uint8_t color) {
         kVgaSurface->set(color);
+    }
+
+    uint8_t* get_buffer(){
+        return kVgaSurface->data();
     }
 
     uint8_t *buffer() {
@@ -94,7 +98,7 @@ namespace vga {
 
     void set_palette(uint8_t *palette, size_t palette_size) {
         outp(0x03c8, 0);
-        ASSERT(palette_size <= kNumColors - kReservedPalette);
+        CHECK(palette_size <= kNumColors - kReservedPalette);
 
         for (size_t i = 0; i < kReservedPalette * 3; i++) {
             outp(0x03c9, kVgaDefaultPalette[i] >> 2);
