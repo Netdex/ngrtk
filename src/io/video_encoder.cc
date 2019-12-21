@@ -10,6 +10,9 @@ namespace io {
     void video_encoder::encode_header(video_file_hdr &hdr) {
         CHECK(stream_.good());
         stream_.write(reinterpret_cast<const char *>(&hdr.frame_count), sizeof(hdr.frame_count));
+        stream_.write(reinterpret_cast<const char *>(&hdr.framerate), sizeof(hdr.framerate));
+        stream_.write(reinterpret_cast<const char *>(&hdr.palette_size), sizeof(hdr.palette_size));
+        stream_.write(reinterpret_cast<const char *>(hdr.palette_data), hdr.palette_size);
     }
 
     void video_encoder::encode_frame(video_frame_hdr &hdr) {

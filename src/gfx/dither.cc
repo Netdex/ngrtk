@@ -38,30 +38,34 @@ namespace gfx {
                 r = new_r;
                 g = new_g;
                 b = new_b;
-
                 surface_data[y * vga::kVgaWidth + x] = new_pixel;
+
                 float err_r = old_r - new_r;
                 float err_g = old_g - new_g;
                 float err_b = old_b - new_b;
+                constexpr float y_1_x_weight = 5.0f / 16;
+                constexpr float y_1_x_m1_weight = 3.0f / 16;
+                constexpr float y_x_1_weight = 7.0f / 16;
+                constexpr float y_1_x_1_weight = 1.0f / 16;
 
                 if (y < vga::kVgaHeight - 1) {
-                    float_data[y + 1][x][0] = float_data[y + 1][x][0] + err_r * 5 / 16;
-                    float_data[y + 1][x][1] = float_data[y + 1][x][1] + err_g * 5 / 16;
-                    float_data[y + 1][x][2] = float_data[y + 1][x][2] + err_b * 5 / 16;
+                    float_data[y + 1][x][0] += err_r * y_1_x_weight;
+                    float_data[y + 1][x][1] += err_g * y_1_x_weight;
+                    float_data[y + 1][x][2] += err_b * y_1_x_weight;
                     if (x > 0) {
-                        float_data[y + 1][x - 1][0] = float_data[y + 1][x - 1][0] + err_r * 3 / 16;
-                        float_data[y + 1][x - 1][1] = float_data[y + 1][x - 1][1] + err_g * 3 / 16;
-                        float_data[y + 1][x - 1][2] = float_data[y + 1][x - 1][2] + err_b * 3 / 16;
+                        float_data[y + 1][x - 1][0] += err_r * y_1_x_m1_weight;
+                        float_data[y + 1][x - 1][1] += err_g * y_1_x_m1_weight;
+                        float_data[y + 1][x - 1][2] += err_b * y_1_x_m1_weight;
                     }
                 }
                 if (x < vga::kVgaWidth - 1) {
-                    float_data[y][x + 1][0] = float_data[y][x + 1][0] + err_r * 7 / 16;
-                    float_data[y][x + 1][1] = float_data[y][x + 1][1] + err_g * 7 / 16;
-                    float_data[y][x + 1][2] = float_data[y][x + 1][2] + err_b * 7 / 16;
+                    float_data[y][x + 1][0] += err_r * y_x_1_weight;
+                    float_data[y][x + 1][1] += err_g * y_x_1_weight;
+                    float_data[y][x + 1][2] += err_b * y_x_1_weight;
                     if (y < vga::kVgaHeight - 1) {
-                        float_data[y + 1][x + 1][0] = float_data[y + 1][x + 1][0] + err_r * 1 / 16;
-                        float_data[y + 1][x + 1][1] = float_data[y + 1][x + 1][1] + err_g * 1 / 16;
-                        float_data[y + 1][x + 1][2] = float_data[y + 1][x + 1][2] + err_b * 1 / 16;
+                        float_data[y + 1][x + 1][0] += err_r * y_1_x_1_weight;
+                        float_data[y + 1][x + 1][1] += err_g * y_1_x_1_weight;
+                        float_data[y + 1][x + 1][2] += err_b * y_1_x_1_weight;
                     }
                 }
             }

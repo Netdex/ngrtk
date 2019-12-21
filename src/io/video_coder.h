@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstdint>
 
+#include "io/vga_dos.h"
 #include "gfx/surface.h"
 #include "third_party/lz4/lz4.h"
 #include "third_party/lz4/lz4hc.h"
@@ -11,6 +12,9 @@
 namespace io {
     struct video_file_hdr {
         uint32_t frame_count;
+        float framerate;
+        uint16_t palette_size;
+        uint8_t palette_data[3 * vga::kNumColors];
     };
 
     struct video_frame_hdr {

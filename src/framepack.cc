@@ -31,12 +31,13 @@ int main(int argc, char *argv[]) {
     bool save = false;
     size_t palette_size = 0;
     uint8_t palette_data[vga::kNumColors * 3];
+    float framerate = 0.0f;
     const char ext[] = "png";
 
     char filename[256] = {0};
 
     int opt;
-    while ((opt = getopt(argc, argv, "xo:n:p:s::b::c::")) != -1) {
+    while ((opt = getopt(argc, argv, "xo:n:p:f:s::b::c::")) != -1) {
         switch (opt) {
             case 's': {
                 char *endptr;
@@ -83,6 +84,17 @@ int main(int argc, char *argv[]) {
                 }
                 break;
             }
+            case 'f': {
+                char *endptr;
+                CHECK(optarg != nullptr);
+                framerate = std::strtof(optarg, &endptr);
+                if (endptr == optarg || *endptr != '\0') {
+                    std::cerr << argv[0] << ": \"" << optarg << "\" is invalid format for -f, expected scalar float"
+                              << std::endl;
+                    return EXIT_FAILURE;
+                }
+                break;
+            }
             case 'p': {
                 palette_size = 0;
                 char *endptr = optarg;
@@ -96,7 +108,7 @@ int main(int argc, char *argv[]) {
                         return EXIT_FAILURE;
                     }
                     CHECK(val >= 0 && val < 256);
-                    if (palette_size >= vga::kNumColors * 3) {
+                    if (palette_size > vga::kNumColors * 3) {
                         std::cerr << argv[0] << ": palette data is too large, limit to 256 colors" << std::endl;
                         return EXIT_FAILURE;
                     }
@@ -126,19 +138,25 @@ int main(int argc, char *argv[]) {
         return EXIT_FAILURE;
     }
     char *prefix = argv[optind];
+
     CHECK(count > 0);
+    CHECK(framerate > 0.0f);
 
-    std::cout << "framepack: processing " << count << " images, with prefix " << prefix << ", starting with index "
-              << start << ", output to " << filename << std::endl;
+    std::cout << "framepack: " << count << " frames @ " << framerate << " fps, prefix " << prefix << ", start "
+              << start << ", output " << filename << std::endl;
 
-    const gfx::vga_palette my_palette(palette_data, static_cast<uint8_t>(palette_size));
+    const gfx::vga_palette my_palette(palette_data, palette_size);
 
     std::ofstream outf(filename, std::ios::binary);
     CHECK(outf.good());
 
     io::video_encoder encoder(outf);
+
     io::video_file_hdr file_hdr{};
     file_hdr.frame_count = static_cast<uint32_t>(count);
+    file_hdr.framerate = framerate;
+    file_hdr.palette_size = static_cast<uint16_t>(palette_size);
+    std::copy(palette_data, palette_data + palette_size, file_hdr.palette_data);
     encoder.encode_header(file_hdr);
 
     for (long i = start; i < start + count; ++i) {

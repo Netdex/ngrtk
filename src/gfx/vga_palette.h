@@ -21,7 +21,7 @@ namespace gfx {
 
     class vga_palette {
     public:
-        vga_palette(uint8_t *palette_data, uint8_t num_colors) : num_colors_(num_colors) {
+        vga_palette(uint8_t *palette_data, size_t num_colors) : num_colors_(num_colors) {
             memcpy(palette_data_, palette_data, static_cast<size_t>(num_colors * 3) * sizeof(uint8_t));
         }
 
@@ -46,13 +46,13 @@ namespace gfx {
 
         uint8_t nearest(float fr, float fg, float fb) const {
             uint8_t nearest_palette = UINT8_MAX;
-            float min_dist = FLT_MAX;
+            float min_distsq = FLT_MAX;
             for (uint8_t i = 0; i < num_colors_; ++i) {
                 float fcr, fcg, fcb;
                 get(i, fcr, fcg, fcb);
-                float distsq = powf(fcr - fr, 2) + powf(fcg - fg, 2) + powf(fcb - fb, 2);
-                if (distsq < min_dist) {
-                    min_dist = distsq;
+                float distsq = (fcr - fr) * (fcr - fr) + (fcg - fg) * (fcg - fg) + (fcb - fb) * (fcb - fb);
+                if (distsq < min_distsq) {
+                    min_distsq = distsq;
                     nearest_palette = i;
                 }
             }
@@ -61,7 +61,7 @@ namespace gfx {
 
     private:
         uint8_t palette_data_[vga::kNumColors * 3] = {0};
-        uint8_t num_colors_;
+        size_t num_colors_;
     };
 }
 

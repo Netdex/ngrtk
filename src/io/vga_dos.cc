@@ -32,6 +32,9 @@ namespace vga {
         constexpr size_t kReservedPalette = 16;
         uint8_t kVgaDefaultPalette[] = {
                 /*  0: BLACK  */ 0, 0, 0,
+                /*  0: BLACK  */ 64, 64, 64,
+                /*  0: BLACK  */ 128, 128, 128,
+                /*  0: BLACK  */ 192, 192, 192,
                 /* 15: WHITE  */ 255, 255, 255,
                 /*  1: BLUE   */ 0, 0, 255,
                 /*  2: CYAN   */ 0, 255, 255,
@@ -41,7 +44,6 @@ namespace vga {
                                  0, 0, 0, 0, 0, 0,
                                  0, 0, 0, 0, 0, 0,
                                  0, 0, 0, 0, 0, 0,
-                                 0, 0, 0, 0, 0, 0, 0, 0, 0,
         };
     }
 
@@ -68,7 +70,7 @@ namespace vga {
         kVgaSurface->set(color);
     }
 
-    uint8_t* get_buffer(){
+    uint8_t *get_buffer() {
         return kVgaSurface->data();
     }
 

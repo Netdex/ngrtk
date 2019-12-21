@@ -9,6 +9,9 @@ namespace io {
     void video_decoder::decode_header(video_file_hdr &hdr) {
         CHECK(stream_.good());
         stream_.read(reinterpret_cast<char *>(&hdr.frame_count), sizeof(hdr.frame_count));
+        stream_.read(reinterpret_cast<char *>(&hdr.framerate), sizeof(hdr.framerate));
+        stream_.read(reinterpret_cast<char *>(&hdr.palette_size), sizeof(hdr.palette_size));
+        stream_.read(reinterpret_cast<char *>(hdr.palette_data), hdr.palette_size);
     }
 
     gfx::vga_surface &video_decoder::decode_frame(video_frame_hdr &hdr) {
